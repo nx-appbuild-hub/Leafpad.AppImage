@@ -7,3 +7,11 @@ all:
 	wget --output-document=$(OUTPUT) --continue $(SOURCE)
 	chmod +x $(OUTPUT)
 
+	./Leafpad.AppImage --appimage-extract
+	rm -f squashfs-root/leafpad.png
+	rm -f squashfs-root/leafpad.desktop
+	cp ./leafpad.svg squashfs-root/
+	cp ./leafpad.desktop squashfs-root/
+	export ARCH=x86_64 && bin/appimagetool.AppImage squashfs-root $(OUTPUT)
+	rm -rf squashfs-root/
+	chmod +x $(OUTPUT)
