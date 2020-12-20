@@ -9,30 +9,29 @@
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-
-SOURCE="https://dl.bintray.com/probono/AppImages/Leafpad-0.8.18.1.glibc2.4-x86_64.AppImage"
-OUTPUT="Leafpad.AppImage"
+PWD:=$(shell pwd)
 
 all: clean
-	mkdir --parents $(PWD)/build
+	mkdir --parents $(PWD)/build/Boilerplate.AppDir/leafpad
+	apprepo --destination=$(PWD)/build appdir boilerplate libatk1.0-0 libatk-bridge2.0-0 libgtk-3-0
 
-	wget --output-document="$(PWD)/build/Leafpad.AppImage" "https://dl.bintray.com/probono/AppImages/Leafpad-0.8.18.1.glibc2.4-x86_64.AppImage"
-	chmod +x $(PWD)/build/Leafpad.AppImage
+	wget --output-document="$(PWD)/build/build.deb" http://ftp.de.debian.org/debian/pool/main/l/leafpad/leafpad_0.8.18.1-5_amd64.deb
+	dpkg -x $(PWD)/build/build.deb $(PWD)/build
 
-	wget --no-check-certificate --output-document=$(PWD)/build/build.rpm http://mirror.centos.org/centos/8/AppStream/x86_64/os/Packages/gtk2-2.24.32-4.el8.x86_64.rpm
-	cd $(PWD)/build && rpm2cpio $(PWD)/build/build.rpm | cpio -idmv && cd ..
+	cp --force --recursive $(PWD)/build/usr/bin/* $(PWD)/build/Boilerplate.AppDir/bin
+	cp --force --recursive $(PWD)/build/usr/share/* $(PWD)/build/Boilerplate.AppDir/share
 
-
-	cd $(PWD)/build && $(PWD)/build/Leafpad.AppImage --appimage-extract
-	cp --force --recursive $(PWD)/build/usr/lib64/* $(PWD)/build/squashfs-root/usr/lib
+	echo "exec \$${APPDIR}/bin/leafpad \"\$${@}\"" >> $(PWD)/build/Boilerplate.AppDir/AppRun
 
 
-	rm -f $(PWD)/build/squashfs-root/leafpad.png
-	rm -f $(PWD)/build/squashfs-root/leafpad.desktop
-	cp --force $(PWD)/leafpad.svg $(PWD)/build/squashfs-root/
-	cp --force $(PWD)/leafpad.desktop $(PWD)/build/squashfs-root/
+	rm -f $(PWD)/build/Boilerplate.AppDir/*.desktop | true
+	rm -f $(PWD)/build/Boilerplate.AppDir/*.png | true
+	rm -f $(PWD)/build/Boilerplate.AppDir/*.svg | true	
 
-	export ARCH=x86_64 && bin/appimagetool.AppImage $(PWD)/build/squashfs-root $(PWD)/Leafpad.AppImage
+	cp --force $(PWD)/AppDir/*.svg $(PWD)/build/Boilerplate.AppDir
+	cp --force $(PWD)/AppDir/*.desktop $(PWD)/build/Boilerplate.AppDir
+	
+	export ARCH=x86_64 && bin/appimagetool.AppImage $(PWD)/build/Boilerplate.AppDir $(PWD)/Leafpad.AppImage
 	chmod +x $(PWD)/Leafpad.AppImage
 
 clean:
