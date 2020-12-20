@@ -13,7 +13,7 @@ PWD:=$(shell pwd)
 
 all: clean
 	mkdir --parents $(PWD)/build/Boilerplate.AppDir/leafpad
-	apprepo --destination=$(PWD)/build appdir boilerplate libatk1.0-0 libatk-bridge2.0-0 libgtk-3-0
+	apprepo --destination=$(PWD)/build appdir boilerplate libatk1.0-0 libatk-bridge2.0-0 libgtk-3-0 libgtk2.0-0
 
 	wget --output-document="$(PWD)/build/build.deb" http://ftp.de.debian.org/debian/pool/main/l/leafpad/leafpad_0.8.18.1-5_amd64.deb
 	dpkg -x $(PWD)/build/build.deb $(PWD)/build
