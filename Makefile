@@ -1,17 +1,35 @@
-SOURCE="https://dl.bintray.com/probono/AppImages/Leafpad-0.8.18.1.glibc2.4-x86_64.AppImage"
-OUTPUT="Leafpad.AppImage"
+# Copyright 2020 Alex Woroschilow (alex.woroschilow@gmail.com)
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+PWD := $(shell pwd)
 
-all:
-	echo "Building: $(OUTPUT)"
-	rm -f ./$(OUTPUT)
-	wget --output-document=$(OUTPUT) --continue $(SOURCE)
-	chmod +x $(OUTPUT)
+DOCKER_COMPOSE:=docker-compose -f $(PWD)/docker-compose.yaml
 
-	./Leafpad.AppImage --appimage-extract
-	rm -f squashfs-root/leafpad.png
-	rm -f squashfs-root/leafpad.desktop
-	cp ./leafpad.svg squashfs-root/
-	cp ./leafpad.desktop squashfs-root/
-	export ARCH=x86_64 && bin/appimagetool.AppImage squashfs-root $(OUTPUT)
-	rm -rf squashfs-root/
-	chmod +x $(OUTPUT)
+.EXPORT_ALL_VARIABLES:
+CID=$(shell basename $(PWD) | tr -cd '[:alnum:]' | tr A-Z a-z)
+UID=$(shell id -u)
+GID=$(shell id -g)
+
+.PHONY: all
+
+
+all: clean
+	$(DOCKER_COMPOSE) stop
+	$(DOCKER_COMPOSE) up --build --no-start
+	$(DOCKER_COMPOSE) up -d  "appimage"
+	$(DOCKER_COMPOSE) run    "appimage" make all
+	$(DOCKER_COMPOSE) run    "appimage" chown -R $(UID):$(GID) ./
+	$(DOCKER_COMPOSE) stop
+
+clean:
+	$(DOCKER_COMPOSE) up -d  "appimage"
+	$(DOCKER_COMPOSE) run    "appimage" make clean
+	$(DOCKER_COMPOSE) rm --stop --force
